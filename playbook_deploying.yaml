@@ -1,0 +1,59 @@
+- hosts: all
+  become: yes
+  vars:
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa
+  tasks:
+  
+    - name: Cloning a repository with users
+      git:
+        repo: "git@github.com:m-yarmola/users_management.git"
+        dest: /tmp/users_deployment
+        version: master
+        key_file: "{{ ansible_ssh_private_key_file }}"
+        
+    - name: Downloading all user files
+      find:
+        paths: /tmp/users_deployment/users
+        patterns: "*.yaml"
+      register: user_files
+
+    - name: Copying all user files to controller
+      fetch:
+        src: "{{ item.path }}"
+        dest: "/tmp/user_files/"
+        flat: yes
+      loop: "{{ user_files.files }}"
+
+    - name: Downloading vars from users files
+      include_vars:
+        file: "{{ item }}"
+      loop: "{{ query('fileglob', '/tmp/user_files/*.yaml') }}"
+      register: loaded_users
+
+    - name: Gathering the user list
+      set_fact:
+        users: "{{ loaded_users.results | map(attribute='ansible_facts') | list }}"
+        
+    - name: Creating the users
+      user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups | default('sudo') }}"
+        state: present
+        shell: /bin/bash
+      loop: "{{ users }}"
+      tags: create_users
+      
+    - name: Allow users to run sudo without a password
+      lineinfile:
+        path: /etc/sudoers
+        line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
+        state: present
+        validate: 'visudo -cf %s'
+      loop: "{{ users }}"
+      
+    - name: Add ssh key for users
+      authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ item.ssh_key }}"
+      loop: "{{ users }}"
+      tags: add_ssh_keys
