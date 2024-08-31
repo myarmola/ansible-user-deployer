@@ -1,33 +1,11 @@
 - hosts: all
   become: yes
-  vars:
-    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa
   tasks:
-  
-    - name: Cloning a repository with users
-      git:
-        repo: "git@github.com:m-yarmola/users_management.git"
-        dest: /tmp/users_deployment
-        version: master
-        key_file: "{{ ansible_ssh_private_key_file }}"
-        
-    - name: Downloading all user files
-      find:
-        paths: /tmp/users_deployment/users
-        patterns: "*.yaml"
-      register: user_files
-
-    - name: Copying all user files to controller
-      fetch:
-        src: "{{ item.path }}"
-        dest: "/tmp/user_files/"
-        flat: yes
-      loop: "{{ user_files.files }}"
 
     - name: Downloading vars from users files
       include_vars:
         file: "{{ item }}"
-      loop: "{{ query('fileglob', '/tmp/user_files/*.yaml') }}"
+      loop: "{{ query('fileglob', lookup('env', 'WORKSPACE') + '/users_management/users/*.yaml') }}"
       register: loaded_users
 
     - name: Gathering the user list
