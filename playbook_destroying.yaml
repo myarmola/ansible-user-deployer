@@ -3,13 +3,6 @@
   vars:
     ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa
   tasks:
-  
-    - name: Cloning a repository with users
-      git:
-        repo: "git@github.com:myarmola/users_deployment.git"
-        dest: /tmp/users_deployment
-        version: master
-        key_file: "{{ ansible_ssh_private_key_file }}"
         
     - name: Downloading all user files
       find:
