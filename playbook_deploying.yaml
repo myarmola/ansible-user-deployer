@@ -8,30 +8,26 @@
       loop: "{{ query('fileglob', lookup('env', 'WORKSPACE') + '/users/*.yaml') }}"
       register: loaded_users
 
-    - name: Gathering the user list
-      set_fact:
-        users: "{{ loaded_users.results | map(attribute='ansible_facts') | list }}"
-        
     - name: Creating the users
       user:
-        name: "{{ item.name }}"
-        groups: "{{ item.groups | default('sudo') }}"
+        name: "{{ item.ansible_facts.name }}"
+        groups: "{{ item.ansible_facts.groups | default('sudo') }}"
         state: present
         shell: /bin/bash
-      loop: "{{ users }}"
+      loop: "{{ loaded_users.results }}"
       tags: create_users
       
     - name: Allow users to run sudo without a password
       lineinfile:
         path: /etc/sudoers
-        line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
+        line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD: ALL"
         state: present
         validate: 'visudo -cf %s'
-      loop: "{{ users }}"
+      loop: "{{ loaded_users.results }}"
       
     - name: Add ssh key for users
       authorized_key:
-        user: "{{ item.name }}"
-        key: "{{ item.ssh_key }}"
-      loop: "{{ users }}"
+        user: "{{ item.ansible_facts.name }}"
+        key: "{{ item.ansible_facts.ssh_key }}"
+      loop: "{{ loaded_users.results }}"
       tags: add_ssh_keys
