@@ -25,7 +25,7 @@
         validate: 'visudo -cf %s'
       loop: "{{ loaded_users.results }}"
       
-    - name: Add ssh key for users
+    - name: Adding ssh keys for users
       authorized_key:
         user: "{{ item.ansible_facts.name }}"
         key: "{{ item.ansible_facts.ssh_key }}"
