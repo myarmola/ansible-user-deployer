@@ -4,7 +4,7 @@
 
     - name: Downloading vars from users files
       ansible.builtin.include_vars:
-        files: "{{ query('fileglob', './users/*.yaml') }}"
+        file: "{{ query('fileglob', './users/*.yaml') }}"
       register: loaded_users
 
     - name: Creating the users
