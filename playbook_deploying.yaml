@@ -3,8 +3,9 @@
   tasks:
 
     - name: Downloading vars from users files
-      ansible.builtin.include_vars:
-        file: "{{ query('fileglob', './users/*.yaml') }}"
+      include_vars:
+        file: "{{ item }}"
+      loop: "{{ query('fileglob', lookup('env', 'WORKSPACE') + '/users/*.yaml') }}"
       register: loaded_users
 
     - name: Creating the users
