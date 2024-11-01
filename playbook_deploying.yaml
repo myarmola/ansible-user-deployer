@@ -24,9 +24,8 @@
       
     - name: Allow users to run sudo without a password
       lineinfile:
-        path: "/etc/sudoers.d/{{ item.ansible_facts.name }}"
+        path: "/etc/sudoers"
         state: present
-        create: yes
         line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD:ALL"
         validate: "visudo -cf %s"
       loop: "{{ loaded_users.results }}"
