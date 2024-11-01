@@ -15,8 +15,8 @@
 
     - name: Creating the users
       user:
-        name: "{{ item.ansible_facts.loaded_user.name }}"
-        groups: "{{ item.ansible_facts.loaded_user.groups | default('sudo') }}"
+        name: "{{ item.ansible_facts.name }}"
+        groups: "{{ item.ansible_facts.groups | default('sudo') }}"
         state: present
         shell: /bin/bash
       loop: "{{ loaded_users.results }}"
