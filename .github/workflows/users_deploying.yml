@@ -1,4 +1,4 @@
-name: Users deploying
+name: Deploy SSH users
 
 on:
   push:
@@ -16,14 +16,14 @@ jobs:
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }} #secret stored in repository
 
       - name: Install Ansible
-        run: sudo apt-get update && sudo apt-get install -y ansible
+        run: sudo apt update && sudo apt install -y ansible
       
       - name: Add remote server to known_hosts
-        run: ssh-keyscan -H 3.96.173.110 >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H $(grep 'host=' inventory.ini | cut -d'=' -f2) >> ~/.ssh/known_hosts
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i inventory.ini playbook_deploying.yaml
+          ansible-playbook -i inventory.ini playbook_deploying.yaml -v
