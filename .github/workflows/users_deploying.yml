@@ -11,19 +11,19 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up SSH
+      - name: Setting up SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }} #secret stored in repository
 
-      - name: Install Ansible
+      - name: Installing Ansible
         run: sudo apt update && sudo apt install -y ansible
       
-      - name: Add remote server to known_hosts
+      - name: Adding remote server to known_hosts
         run: ssh-keyscan -H $(grep 'host=' inventory.ini | awk '{print $2}' | cut -d'=' -f2) >> ~/.ssh/known_hosts
 
-      - name: Run Ansible Playbook
+      - name: Running Ansible Playbook
         run: |
           ansible-playbook -i inventory.ini playbook_deploying.yaml -v
