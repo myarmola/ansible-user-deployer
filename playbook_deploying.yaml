@@ -2,38 +2,37 @@
   become: yes
   tasks:
 
-    - name: Downloading vars from users files
-      include_vars:
-        file: "{{ item }}"
-      with_fileglob:
-        - users/*.yaml
-      register: loaded_users
+    - name: Load SSH keys from user files
+      find:
+        paths: users
+        patterns: "*.yaml"
+      register: user_files
 
-    - name: Debug loaded users
+    - name: Debug loaded user files
       debug:
-        var: loaded_users
+        var: user_files
 
-    - name: Creating the users
+    - name: Create users based on file names
       user:
-        name: "{{ item.ansible_facts.name }}"
-        groups: "{{ item.ansible_facts.groups | default('sudo') }}"
+        name: "{{ item.path | basename | splitext | first }}"
+        groups: "sudo"
         state: present
         shell: /bin/bash
-      loop: "{{ loaded_users.results }}"
+      loop: "{{ user_files.files }}"
       tags: create_users
-      
+
     - name: Allow users to run sudo without a password
       lineinfile:
         path: "/etc/sudoers"
         state: present
-        line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD:ALL"
+        line: "{{ item.path | basename | splitext | first }} ALL=(ALL) NOPASSWD:ALL"
         validate: "visudo -cf %s"
-      loop: "{{ loaded_users.results }}"
+      loop: "{{ user_files.files }}"
       tags: sudoers
-      
-    - name: Adding ssh keys for users
+
+    - name: Add SSH key for users
       authorized_key:
-        user: "{{ item.ansible_facts.name }}"
-        key: "{{ item.ansible_facts.ssh_key }}"
-      loop: "{{ loaded_users.results }}"
+        user: "{{ item.path | basename | splitext | first }}"
+        key: "{{ lookup('file', item.path) }}"
+      loop: "{{ user_files.files }}"
       tags: add_ssh_keys
