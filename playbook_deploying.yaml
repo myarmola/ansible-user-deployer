@@ -3,10 +3,11 @@
   tasks:
 
     - name: Load SSH keys from user files
-      find:
-        paths: users
-        patterns: "*.yaml"
-      register: user_files
+      include_vars:
+        file: "{{ item }}"
+      with_fileglob:
+        - users/*.yaml
+      register: loaded_users
 
     - name: Debug loaded user files
       debug:
