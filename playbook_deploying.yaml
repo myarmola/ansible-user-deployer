@@ -24,15 +24,17 @@
       
     - name: Allow users to run sudo without a password
       lineinfile:
-        path: /etc/sudoers
-        line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
+        path: "/etc/sudoers.d/{{ item.ansible_facts.name }}"
         state: present
-        validate: 'visudo -cf %s'
+        create: yes
+        line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD:ALL"
+        validate: "visudo -cf %s"
       loop: "{{ loaded_users.results }}"
+      tags: sudoers
       
     - name: Adding ssh keys for users
       authorized_key:
-        user: "{{ item.name }}"
-        key: "{{ item.ssh_key }}"
+        user: "{{ item.ansible_facts.name }}"
+        key: "{{ item.ansible_facts.ssh_key }}"
       loop: "{{ loaded_users.results }}"
       tags: add_ssh_keys
