@@ -10,8 +10,8 @@
 
     - name: Creating the users
       user:
-        name: "{{ item.ansible_facts.name }}"
-        groups: "{{ item.ansible_facts.groups | default('sudo') }}"
+        name: "{{ item.name }}"
+        groups: "{{ item.groups | default('sudo') }}"
         state: present
         shell: /bin/bash
       loop: "{{ loaded_users.results }}"
@@ -20,14 +20,14 @@
     - name: Allow users to run sudo without a password
       lineinfile:
         path: /etc/sudoers
-        line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD: ALL"
+        line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
         state: present
         validate: 'visudo -cf %s'
       loop: "{{ loaded_users.results }}"
       
     - name: Adding ssh keys for users
       authorized_key:
-        user: "{{ item.ansible_facts.name }}"
-        key: "{{ item.ansible_facts.ssh_key }}"
+        user: "{{ item.name }}"
+        key: "{{ item.ssh_key }}"
       loop: "{{ loaded_users.results }}"
       tags: add_ssh_keys
