@@ -5,17 +5,18 @@
     - name: Downloading vars from users files
       include_vars:
         file: "{{ item }}"
-      loop: "{{ query('fileglob', lookup('env', 'WORKSPACE') + 'users/*.yaml') }}"
+      with_fileglob:
+        - users/*.yaml
       register: loaded_users
-      
+
     - name: Debug loaded users
       debug:
-        var: loaded_users.results
+        var: loaded_users
 
     - name: Creating the users
       user:
-        name: "{{ item.name }}"
-        groups: "{{ item.groups | default('sudo') }}"
+        name: "{{ item.ansible_facts.loaded_user.name }}"
+        groups: "{{ item.ansible_facts.loaded_user.groups | default('sudo') }}"
         state: present
         shell: /bin/bash
       loop: "{{ loaded_users.results }}"

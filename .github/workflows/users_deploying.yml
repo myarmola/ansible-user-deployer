@@ -24,12 +24,6 @@ jobs:
       - name: Add remote server to known_hosts
         run: ssh-keyscan -H $(grep 'host=' inventory.ini | awk '{print $2}' | cut -d'=' -f2) >> ~/.ssh/known_hosts
 
-      - name: Check directory
-        run: pwd
-        
-      - name: Сheck files
-        run: ls -la
-
       - name: Run Ansible Playbook
         run: |
           ansible-playbook -i inventory.ini playbook_deploying.yaml -v
