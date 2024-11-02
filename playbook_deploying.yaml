@@ -1,39 +1,39 @@
 - hosts: all
   become: yes
   tasks:
+  
+    - name: Loading SSH keys from user files
+      find:
+        paths: "./users"
+        patterns: "*.yaml"
+        recurse: yes
+      register: user_files
 
-    - name: Load SSH keys from user files
-      include_vars:
-        file: "{{ item }}"
-      with_fileglob:
-        - users/*.yaml
-      register: loaded_users
-
-    - name: Debug loaded user files
+    - name: Debuggin loaded user files
       debug:
         var: user_files
 
-    - name: Create users based on file names
+    - name: Creating users based on file names
       user:
-        name: "{{ item.path | basename | splitext | first }}"
-        groups: "sudo"
+        name: "{{ item.path | basename | regex_replace('.yaml', '') }}"
         state: present
+        groups: "sudo"
         shell: /bin/bash
       loop: "{{ user_files.files }}"
       tags: create_users
 
-    - name: Allow users to run sudo without a password
+    - name: Adding users to sudoers
       lineinfile:
-        path: "/etc/sudoers"
+        path: /etc/sudoers
         state: present
-        line: "{{ item.path | basename | splitext | first }} ALL=(ALL) NOPASSWD:ALL"
+        line: "{{ item.path | basename | regex_replace('.yaml', '') }} ALL=(ALL) NOPASSWD:ALL"
         validate: "visudo -cf %s"
       loop: "{{ user_files.files }}"
       tags: sudoers
 
-    - name: Add SSH key for users
+    - name: Adding SSH keys for users
       authorized_key:
-        user: "{{ item.path | basename | splitext | first }}"
+        user: "{{ item.path | basename | regex_replace('.yaml', '') }}"
         key: "{{ lookup('file', item.path) }}"
       loop: "{{ user_files.files }}"
       tags: add_ssh_keys
