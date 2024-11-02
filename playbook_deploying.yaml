@@ -1,39 +1,39 @@
 - hosts: all
   become: yes
   tasks:
-  
-    - name: Loading SSH keys from user files
-      find:
-        paths: "./users"
-        patterns: "*.yaml"
-        recurse: yes
-      register: user_files
 
-    - name: Debuggin loaded user files
+    - name: Downloading vars from users files
+      include_vars:
+        file: "{{ item }}"
+      with_fileglob:
+        - users/*.yaml
+      register: loaded_users
+
+    - name: Debug loaded users
       debug:
-        var: user_files
+        var: loaded_users
 
-    - name: Creating users based on file names
+    - name: Creating the users
       user:
-        name: "{{ item.path | basename | regex_replace('.yaml', '') }}"
+        name: "{{ item.ansible_facts.name }}"
+        groups: "{{ item.ansible_facts.groups | default('sudo') }}"
         state: present
-        groups: "sudo"
         shell: /bin/bash
-      loop: "{{ user_files.files }}"
+      loop: "{{ loaded_users.results }}"
       tags: create_users
-
-    - name: Adding users to sudoers
+      
+    - name: Allow users to run sudo without a password
       lineinfile:
-        path: /etc/sudoers
+        path: "/etc/sudoers"
         state: present
-        line: "{{ item.path | basename | regex_replace('.yaml', '') }} ALL=(ALL) NOPASSWD:ALL"
+        line: "{{ item.ansible_facts.name }} ALL=(ALL) NOPASSWD:ALL"
         validate: "visudo -cf %s"
-      loop: "{{ user_files.files }}"
+      loop: "{{ loaded_users.results }}"
       tags: sudoers
-
-    - name: Adding SSH keys for users
+      
+    - name: Adding ssh keys for users
       authorized_key:
-        user: "{{ item.path | basename | regex_replace('.yaml', '') }}"
-        key: "{{ lookup('file', item.path) }}"
-      loop: "{{ user_files.files }}"
+        user: "{{ item.ansible_facts.name }}"
+        key: "{{ item.ansible_facts.ssh_key }}"
+      loop: "{{ loaded_users.results }}"
       tags: add_ssh_keys
