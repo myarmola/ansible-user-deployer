@@ -22,7 +22,7 @@ jobs:
         run: sudo apt update && sudo apt install -y ansible
       
       - name: Adding remote server to known_hosts
-        run: ssh-keyscan -H $(grep 'host=' inventory.ini | awk '{print $2}' | cut -d'=' -f2) >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p 2222 -H $(grep 'host=' inventory.ini | awk '{print $2}' | cut -d'=' -f2) >> ~/.ssh/known_hosts
 
       - name: Running Ansible Playbook
         run: |
