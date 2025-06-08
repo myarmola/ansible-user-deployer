@@ -1,6 +1,6 @@
-# SSH user management
+# Linux User Management
 
-This repository automates the SSH user management process: creating users and setting up SSH access. For this, Ansible is used together with GitHub Actions, which allows you to run scripts automatically when changes are made to the repository.
+This tool automates the Linux user management process: creating users and setting up SSH access. Ansible is used together with GitHub Actions, which allows you to run scripts automatically when changes are made to the repository.
 
 ## Functional capabilities
 
