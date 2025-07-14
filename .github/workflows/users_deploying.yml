@@ -1,4 +1,4 @@
-name: Deploy SSH users
+name: Deploying SSH users
 
 on:
   push:
