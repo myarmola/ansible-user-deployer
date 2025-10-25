@@ -1,6 +1,6 @@
 # Ansible user deployer
 
-This tool automates the process of managing Linux users: creating users and configuring SSH access. Ansible is used in conjunction with GitHub Actions, which allows scripts to be run automatically when new servers or users are added to the files.
+This tool automates the process of managing Linux users: creating users and configuring SSH access. Ansible is used in cooperation with GitHub Actions, which allows scripts to be run automatically when new servers or users are added to the files.
 
 ## How it works
 
@@ -14,21 +14,21 @@ This tool automates the process of managing Linux users: creating users and conf
 
 ## Prerequisites
 
-On all servers, a user named **_ansible_** must be created with sudo privileges and the ability to execute sudo without a password.
+On all servers, a user named `ansible` must be created with sudo privileges and the ability to execute sudo without a password.
 
-A public key must also be added to **_/home/ansible/.ssh/authorized_keys_** from the **_ANSIBLE_SSH_PRIVATE_KEY_** variable.
+A public key must also be added to `/home/ansible/.ssh/authorized_keys` from the `ANSIBLE_SSH_PRIVATE_KEY` variable.
 
 ## How to use
 
 Adding a new user:
 
-1) Create a new YAML file in the **_users_** folder. This file must contain the user's name, group, and SSH key. Example:
+1) Create a new YAML file in the `users` folder. This file must contain the user's name, group, and SSH key. Example:
 
 ```yaml
 # File: users/user.yaml
-name: n.surname
+name: user
 groups: sudo
-ssh_key: ssh-rsa AAAAB3Nza...n.surname@example.local
+ssh_key: ssh-rsa AAAAB3Nza...user@local
 ```
 
 2) Commit to the `master` branch or create a pull request and merge into master. Changes to the repository automatically trigger the GitHub Actions workflow `users_deploying.yml`. Workflow executes a playbook that creates users on servers.
