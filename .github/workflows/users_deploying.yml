@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'users/**'
+      - 'inventory.ini'
 
 jobs:
   deploy:
