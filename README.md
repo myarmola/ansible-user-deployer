@@ -1,28 +1,31 @@
-# Linux User Management
+# Ansible user deployer
 
-This tool automates the Linux user management process: creating users and setting up SSH access. Ansible is used together with GitHub Actions, which allows you to run scripts automatically when changes are made to the repository.
+This tool automates the process of managing Linux users: creating users and configuring SSH access. Ansible is used in conjunction with GitHub Actions, which allows scripts to be run automatically when new servers or users are added to the files.
 
-## Functional capabilities
+## How it works
 
-Automated user creation:
-
-1) Each YAML file in the `users` folder contains user data, including name, groups, and SSH key.
+1) Each YAML file in the `users` folder contains user data, including name, groups and SSH key.
    
 2) File `inventory.ini` contains all servers where users will be deployed.
 
-3) Configuring SSH Access: Adds SSH keys for users to login without a password.
+3) Ansible adds the SSH keys for users to log in without a password.
 
-4) Setting sudo privileges: Allows users to execute sudo commands without prompting for a password.
+4) It also allows users to execute sudo commands without prompting for a password.
+
+## Prerequisites
+
+On all servers, a user named **_ansible_** must be created with sudo privileges and the ability to execute sudo without a password.
+
+A public key must also be added to **_/home/ansible/.ssh/authorized_keys_** from the **_ANSIBLE_SSH_PRIVATE_KEY_** variable.
 
 ## How to use
 
 Adding a new user:
 
-1) Create a new YAML file in the **_users_** folder, the file name should match the user's name (for example, `example.user.yaml`).
-The content of the file must contain the user's name, group, and SSH key. Example:
+1) Create a new YAML file in the **_users_** folder. This file must contain the user's name, group, and SSH key. Example:
 
 ```yaml
-# File: users/n.surname.yaml
+# File: users/user.yaml
 name: n.surname
 groups: sudo
 ssh_key: ssh-rsa AAAAB3Nza...n.surname@example.local
@@ -30,4 +33,4 @@ ssh_key: ssh-rsa AAAAB3Nza...n.surname@example.local
 
 2) Commit to the `master` branch or create a pull request and merge into master. Changes to the repository automatically trigger the GitHub Actions workflow `users_deploying.yml`. Workflow executes a playbook that creates users on servers.
    
-4) Check the changes on server.
+3) Wait until the workflow is successfully completed. Once completed, users can connect to servers with their SSH key.
